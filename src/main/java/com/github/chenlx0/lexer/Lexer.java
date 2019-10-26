@@ -44,6 +44,8 @@ public class Lexer {
             return retToken;
         } else if ((retToken = readOneChar()) != null) {
             return retToken;
+        } else if ((retToken = readNumber()) != null) {
+            return retToken;
         } else if ((retToken = readWord()) != null) {
             return retToken;
         }
@@ -54,6 +56,10 @@ public class Lexer {
     private boolean isValidLetter(char c) {
         return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
                 || ('0' <= c && c <= '9') || (c == '_');
+    }
+
+    private boolean isNumChar(char c) {
+        return ('0' <= c && c <= '9') || c == '.';
     }
 
     private Token readOneChar() {
@@ -80,6 +86,8 @@ public class Lexer {
                 return Token.buildToken(Token.TokenType.DIV, "/");
             case '!':
                 return Token.buildToken(Token.TokenType.EXCL, "!");
+            case ',':
+                return Token.buildToken(Token.TokenType.COOMA, ",");
             case '{':
                 return Token.buildToken(Token.TokenType.LBRACE, "{");
             case '}':
@@ -92,6 +100,10 @@ public class Lexer {
                 return Token.buildToken(Token.TokenType.LPAR, "(");
             case ')':
                 return Token.buildToken(Token.TokenType.RPAR, ")");
+            case '>':
+                return Token.buildToken(Token.TokenType.GREATER, ">");
+            case '<':
+                return Token.buildToken(Token.TokenType.LESS, "<");
         }
 
         unsetchar();
@@ -118,8 +130,14 @@ public class Lexer {
                 if (getchar() == '=')
                     return Token.buildToken(Token.TokenType.NOTEQUAL, "!=");
                 break;
+            case '>':
+                if (getchar() == '=')
+                    return Token.buildToken(Token.TokenType.GREATEQ, ">=");
+            case '<':
+                if (getchar() == '=')
+                    return Token.buildToken(Token.TokenType.LESSEQ, "<=");
             default:
-                getchar();
+                cursor++;
                 break;
         }
 
@@ -128,7 +146,19 @@ public class Lexer {
     }
 
     private Token readNumber() {
-        return null;
+        char c = getchar();
+        if (!isNumChar(c)) {
+            unsetchar();
+            return null;
+        }
+
+        StringBuilder builder = new StringBuilder();
+        builder.append(c);
+        while (isNumChar(c = getchar()))
+            builder.append(c);
+        unsetchar();
+
+        return Token.buildToken(Token.TokenType.NUMBER, builder.toString());
     }
 
     private Token readString() {
@@ -174,14 +204,4 @@ public class Lexer {
                 return Token.buildToken(Token.TokenType.VAR, result);
         }
     }
-
-    public static void main(String args[]) {
-        String text = "let x =y; \n if (x != y) { x = z; } ";
-        Lexer lexer = new Lexer(text);
-        Token token;
-        while (!(token = lexer.nextToken()).isToken(Token.TokenType.EOF)) {
-            System.out.println(token.toString());
-        }
-    }
-
 }
