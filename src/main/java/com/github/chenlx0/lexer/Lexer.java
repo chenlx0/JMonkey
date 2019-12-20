@@ -48,6 +48,8 @@ public class Lexer {
             return retToken;
         } else if ((retToken = readWord()) != null) {
             return retToken;
+        } else if ((retToken = readString()) != null) {
+            return retToken;
         }
 
         return Token.buildToken(Token.TokenType.UNKNOWN, "unknown");
@@ -133,9 +135,11 @@ public class Lexer {
             case '>':
                 if (getchar() == '=')
                     return Token.buildToken(Token.TokenType.GREATEQ, ">=");
+                break;
             case '<':
                 if (getchar() == '=')
                     return Token.buildToken(Token.TokenType.LESSEQ, "<=");
+                break;
             default:
                 cursor++;
                 break;
@@ -162,8 +166,17 @@ public class Lexer {
     }
 
     private Token readString() {
+        if (getchar() != '"') {
+            unsetchar();
+            return null;
+        }
 
-        return null;
+        char c;
+        StringBuilder result = new StringBuilder();
+        while ((c = getchar()) != '"')
+            result.append(c);
+
+        return Token.buildToken(Token.TokenType.STRING, result.toString());
     }
 
     private Token readWord() {
