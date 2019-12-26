@@ -5,16 +5,20 @@ import com.github.chenlx0.lexer.Token;
 
 /**
  * @author: Chen Lixiang
- * @date: 2019-12-20
+ * @date: 2019-12-26
  */
-public class AtomExpression implements Expression {
-    public Token token;
+public class VariableExpression implements Expression {
+    Token token;
 
-    public AtomExpression(Token token) {
+    public VariableExpression(Token token) {
         this.token = token;
     }
 
     public Token currentToken() {
         return token;
+    }
+
+    public String getLiteral() {
+        return token.getVal();
     }
 }

@@ -3,19 +3,15 @@ package com.github.chenlx0.parser;
 import com.github.chenlx0.ast.Expression;
 import com.github.chenlx0.ast.Statement;
 import com.github.chenlx0.ast.impl.*;
-import com.github.chenlx0.ast.impl.Program;
 import com.github.chenlx0.lexer.Lexer;
 import com.github.chenlx0.lexer.Token;
 import com.github.chenlx0.lexer.Token.TokenType;
+import com.github.chenlx0.util.Consts;
 import com.github.chenlx0.util.MonkeyException;
 import com.github.chenlx0.util.ParseException;
 
 
 public class Parser {
-
-    public static int L1 = 0, L2 = 1, L3 = 2, L4 = 3;
-
-    public static int INFIX = 0, PREFIX = 1;
 
     private Lexer lexer;
 
@@ -25,9 +21,6 @@ public class Parser {
         this.lexer = lexer;
         nextToken();
         nextToken();
-    }
-
-    private void genAnnotations() {
     }
 
     private void expect(TokenType type) throws MonkeyException {
@@ -44,13 +37,14 @@ public class Parser {
         Program program = new Program();
         Statement tmpStatement;
 
-        while ((tmpStatement = parseStatement()) != null)
+        while ((tmpStatement = parseStatement()) != null) {
             program.add(tmpStatement);
+        }
 
         return program;
     }
 
-    private Statement parseStatement() throws MonkeyException{
+    private Statement parseStatement() {
         switch (curToken.getType()) {
             case EOF:
                 return null;
@@ -63,8 +57,37 @@ public class Parser {
         }
     }
 
-    private Statement parseLetStatement() throws MonkeyException {
-        assert curToken.isToken(TokenType.LET);
+    private short infixPrecedence(TokenType tokenType) {
+        Short result = Consts.InfixPrecedence.get(tokenType);
+        return result == null ? -1 : result;
+    }
+
+    private Expression parsePrefix() {
+        switch (curToken.getType()) {
+            case NUMBER:
+                return parseNumberLiteral();
+            case STRING:
+                return parseStringLiteral();
+            default:
+                throw new ParseException("can not parse token: " + curToken.getVal());
+        }
+    }
+
+    private Expression parseExpression() {
+        return parseExpression(Consts.LOWEST);
+    }
+
+    private Expression parseExpression(short precedence) {
+        Expression leftExp = parsePrefix();
+
+        while (!peekToken.isToken(TokenType.SEMI)) {
+
+        }
+
+        return leftExp;
+    }
+
+    private Statement parseLetStatement() {
         Token letToken = curToken;
         expect(TokenType.VAR);
         Token varToken = curToken;
@@ -74,23 +97,52 @@ public class Parser {
     }
 
     private Statement parseReturnStatement() {
-        assert curToken.isToken(Token.TokenType.RET);
         Token retToken = curToken;
         Expression retExpression = parseExpression();
         return new ReturnStatement(retToken, retExpression);
     }
 
-    private Statement parseExpressionStatement() throws MonkeyException {
+    private Statement parseExpressionStatement() {
         return null;
     }
 
-    private Expression parseExpression() {
-        switch (curToken.getType()) {
-            case SEMI:
-                return null; // parse one line expression end
-            case NUMBER: case STRING:
-                return new AtomExpression(curToken);
+    private Expression parseNumberLiteral() {
+        try {
+            if (curToken.getVal().contains(".")) {
+                Double val = Double.valueOf(curToken.getVal());
+                return new NumberExpression(val);
+            } else {
+                Integer val = Integer.valueOf(curToken.getVal());
+                return new NumberExpression(val);
+            }
+        } catch (NumberFormatException e) {
+            throw new ParseException("Parse number: " + curToken.getVal() + " failed.");
         }
-        return null;
+    }
+
+    private Expression parseStringLiteral() {
+        Expression result = new StringExpression(curToken);
+        return result;
+    }
+
+    private Expression parseBooleanLiteral() {
+        Expression result;
+        if (curToken.getType() == TokenType.TRUE) {
+            result = new BooleanExpression(true);
+        } else {
+            result = new BooleanExpression(false);
+        }
+        return result;
+    }
+
+    private Expression parseVariableLiteral() {
+        Expression result = new VariableExpression(curToken);
+        return result;
+    }
+
+    private Expression parseOperatorPrefix() {
+        Token tmpToken = curToken;
+        Expression nextExpression = parseExpression(Consts.PREFIX);
+        return new OperatorPrefixExpression(tmpToken, nextExpression);
     }
 }
