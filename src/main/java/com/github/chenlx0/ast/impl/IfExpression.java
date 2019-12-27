@@ -20,6 +20,7 @@ public class IfExpression implements Expression {
         this.Blocks = blocks;
     }
 
+    @Override
     public Token currentToken() {
         return token;
     }

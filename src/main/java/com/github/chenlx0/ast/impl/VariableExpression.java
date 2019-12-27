@@ -14,6 +14,7 @@ public class VariableExpression implements Expression {
         this.token = token;
     }
 
+    @Override
     public Token currentToken() {
         return token;
     }

@@ -2,7 +2,7 @@ package com.github.chenlx0.lexer;
 
 public class Token {
     public enum TokenType { EOF, NUMBER, STRING, LET, FUNC, TRUE, FALSE, RET, VAR, UNKNOWN,
-                            IF, ELSE, LBRACE, RBRACE, EQEQUAL, NOTEQUAL, AND, OR, XOR, COOMA,
+                            IF, ELSE, LBRACE, RBRACE, EQEQUAL, NOTEQUAL, AND, OR, XOR, COMMA,
                             ASSIGN, AMPER, VBAR, PLUS, MINUS, MULTI, DIV, GREATER, LESS, EXCL,
                             LSQB, RSQB, LPAR, RPAR, SEMI, GREATEQ, LESSEQ }
 

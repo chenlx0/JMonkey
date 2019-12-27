@@ -10,9 +10,9 @@ import com.github.chenlx0.lexer.Token;
 public class InfixExpression implements Expression {
     private Token token;
 
-    public Expression LeftExpression;
+    private Expression LeftExpression;
 
-    public Expression RightExpression;
+    private Expression RightExpression;
 
     public InfixExpression(Token token, Expression left, Expression right) {
         this.token = token;
@@ -20,7 +20,16 @@ public class InfixExpression implements Expression {
         this.RightExpression = right;
     }
 
+    @Override
     public Token currentToken() {
         return token;
+    }
+
+    public Expression getLeftExpression() {
+        return LeftExpression;
+    }
+
+    public Expression getRightExpression() {
+        return RightExpression;
     }
 }

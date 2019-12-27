@@ -12,10 +12,12 @@ public class BooleanExpression implements Expression {
 
     private Token token;
 
-    public BooleanExpression(Boolean val) {
+    public BooleanExpression(Token token, Boolean val) {
+        this.token = token;
         this.val = val;
     }
 
+    @Override
     public Token currentToken() {
         return token;
     }

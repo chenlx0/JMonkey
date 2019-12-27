@@ -89,7 +89,7 @@ public class Lexer {
             case '!':
                 return Token.buildToken(Token.TokenType.EXCL, "!");
             case ',':
-                return Token.buildToken(Token.TokenType.COOMA, ",");
+                return Token.buildToken(Token.TokenType.COMMA, ",");
             case '{':
                 return Token.buildToken(Token.TokenType.LBRACE, "{");
             case '}':

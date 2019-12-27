@@ -10,17 +10,26 @@ import com.github.chenlx0.lexer.Token;
 public class WhileExpression implements Expression {
     private Token token;
 
-    public Expression Condition;
+    public Expression condition;
 
-    public BlockStatements Blocks;
+    public BlockStatements blocks;
 
     public WhileExpression(Token token, Expression condition, BlockStatements blocks) {
         this.token = token;
-        this.Condition = condition;
-        this.Blocks = blocks;
+        this.condition = condition;
+        this.blocks = blocks;
     }
 
+    @Override
     public Token currentToken() {
         return token;
+    }
+
+    public BlockStatements getBlocks() {
+        return blocks;
+    }
+
+    public Expression getCondition() {
+        return condition;
     }
 }

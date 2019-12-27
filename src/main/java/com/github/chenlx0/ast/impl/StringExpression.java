@@ -17,6 +17,7 @@ public class StringExpression implements Expression {
         this.val = token.getVal();
     }
 
+    @Override
     public Token currentToken() {
         return token;
     }

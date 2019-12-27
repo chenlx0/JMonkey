@@ -9,6 +9,7 @@ import java.util.List;
 public class BlockStatements implements Node {
     List<Statement> statements;
 
+    @Override
     public Token currentToken() {
         if (statements.isEmpty())
             return null;

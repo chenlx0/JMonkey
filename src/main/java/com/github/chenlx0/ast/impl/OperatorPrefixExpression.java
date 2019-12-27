@@ -13,6 +13,7 @@ public class OperatorPrefixExpression implements Expression {
 
     private Expression nextExpression;
 
+    @Override
     public Token currentToken() {
         return token;
     }

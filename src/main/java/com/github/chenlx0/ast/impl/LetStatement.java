@@ -21,6 +21,7 @@ public class LetStatement implements Statement {
         this.expression = expression;
     }
 
+    @Override
     public Token currentToken() {
         return token;
     }

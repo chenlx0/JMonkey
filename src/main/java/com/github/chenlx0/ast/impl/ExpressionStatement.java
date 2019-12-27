@@ -13,13 +13,14 @@ public class ExpressionStatement implements Statement {
 
     private Expression expression;
 
+    @Override
+    public Token currentToken() {
+        return token;
+    }
+
     public ExpressionStatement(Token token, Expression expression) {
         this.token = token;
         this.expression = expression;
-    }
-
-    public Token currentToken() {
-        return token;
     }
 
     public Expression getExpression() {

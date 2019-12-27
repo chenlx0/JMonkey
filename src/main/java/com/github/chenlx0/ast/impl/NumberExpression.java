@@ -17,16 +17,19 @@ public class NumberExpression implements Expression {
 
     private Integer integerVal;
 
+    @Override
     public Token currentToken() {
         return token;
     }
 
-    public NumberExpression(Double val) {
+    public NumberExpression(Token token, Double val) {
+        this.token = token;
         this.isInteger = false;
         this.doubleVal = val;
     }
 
-    public NumberExpression(Integer val) {
+    public NumberExpression(Token token, Integer val) {
+        this.token = token;
         this.isInteger = true;
         this.integerVal = val;
     }

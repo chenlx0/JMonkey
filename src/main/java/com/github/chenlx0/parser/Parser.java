@@ -10,6 +10,11 @@ import com.github.chenlx0.util.Consts;
 import com.github.chenlx0.util.MonkeyException;
 import com.github.chenlx0.util.ParseException;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 
 public class Parser {
 
@@ -24,8 +29,9 @@ public class Parser {
     }
 
     private void expect(TokenType type) throws MonkeyException {
-        if (!peekToken.isToken(type))
+        if (!peekToken.isToken(type)) {
             throw new ParseException("Except " + type.name() + " after " + curToken.getVal());
+        }
     }
 
     private void nextToken() {
@@ -45,6 +51,9 @@ public class Parser {
     }
 
     private Statement parseStatement() {
+        if (curToken.isToken(TokenType.SEMI)) {
+            nextToken();
+        }
         switch (curToken.getType()) {
             case EOF:
                 return null;
@@ -59,7 +68,7 @@ public class Parser {
 
     private short infixPrecedence(TokenType tokenType) {
         Short result = Consts.InfixPrecedence.get(tokenType);
-        return result == null ? -1 : result;
+        return result == null ? Consts.LOWEST : result;
     }
 
     private Expression parsePrefix() {
@@ -68,8 +77,25 @@ public class Parser {
                 return parseNumberLiteral();
             case STRING:
                 return parseStringLiteral();
+            case VAR:
+                return parseVariableLiteral();
+            case TRUE: case FALSE:
+                return parseBooleanLiteral();
+            case MINUS: case EXCL:
+                return parseOperatorPrefix();
+            case LSQB:
+                return parseArrayLiteral();
             default:
-                throw new ParseException("can not parse token: " + curToken.getVal());
+                throw new ParseException("can not parse prefix token: " + curToken.getVal());
+        }
+    }
+
+    private Expression parseInfix(Expression leftExp) {
+        switch (curToken.getType()) {
+            case PLUS: case MINUS: case MULTI: case DIV:
+                return parseNormalInfixOperator(leftExp);
+            default:
+                return null;
         }
     }
 
@@ -80,8 +106,14 @@ public class Parser {
     private Expression parseExpression(short precedence) {
         Expression leftExp = parsePrefix();
 
-        while (!peekToken.isToken(TokenType.SEMI)) {
+        while (!peekToken.isToken(TokenType.SEMI) && precedence < infixPrecedence(peekToken.getType())) {
+            nextToken();
+            Expression nextExp = parseInfix(leftExp);
+            if (nextExp == null) {
+                return leftExp;
+            }
 
+            leftExp = nextExp;
         }
 
         return leftExp;
@@ -90,30 +122,46 @@ public class Parser {
     private Statement parseLetStatement() {
         Token letToken = curToken;
         expect(TokenType.VAR);
+        nextToken();
         Token varToken = curToken;
         expect(TokenType.ASSIGN);
+        nextToken();
+        nextToken();
         Expression signExpression = parseExpression();
+        if (peekToken.isToken(TokenType.SEMI)) {
+            nextToken();
+        }
         return new LetStatement(letToken, varToken, signExpression);
     }
 
     private Statement parseReturnStatement() {
         Token retToken = curToken;
+        nextToken();
         Expression retExpression = parseExpression();
+        if (peekToken.isToken(TokenType.SEMI)) {
+            nextToken();
+        }
         return new ReturnStatement(retToken, retExpression);
     }
 
     private Statement parseExpressionStatement() {
-        return null;
+        Token start = curToken;
+        Expression exp = parseExpression();
+        Statement stmt = new ExpressionStatement(start, exp);
+        if (peekToken.isToken(TokenType.SEMI)) {
+            nextToken();
+        }
+        return stmt;
     }
 
     private Expression parseNumberLiteral() {
         try {
             if (curToken.getVal().contains(".")) {
                 Double val = Double.valueOf(curToken.getVal());
-                return new NumberExpression(val);
+                return new NumberExpression(curToken, val);
             } else {
                 Integer val = Integer.valueOf(curToken.getVal());
-                return new NumberExpression(val);
+                return new NumberExpression(curToken, val);
             }
         } catch (NumberFormatException e) {
             throw new ParseException("Parse number: " + curToken.getVal() + " failed.");
@@ -121,16 +169,15 @@ public class Parser {
     }
 
     private Expression parseStringLiteral() {
-        Expression result = new StringExpression(curToken);
-        return result;
+        return new StringExpression(curToken);
     }
 
     private Expression parseBooleanLiteral() {
         Expression result;
-        if (curToken.getType() == TokenType.TRUE) {
-            result = new BooleanExpression(true);
+        if (curToken.isToken(TokenType.TRUE)) {
+            result = new BooleanExpression(curToken, true);
         } else {
-            result = new BooleanExpression(false);
+            result = new BooleanExpression(curToken,false);
         }
         return result;
     }
@@ -142,7 +189,49 @@ public class Parser {
 
     private Expression parseOperatorPrefix() {
         Token tmpToken = curToken;
+        nextToken();
         Expression nextExpression = parseExpression(Consts.PREFIX);
         return new OperatorPrefixExpression(tmpToken, nextExpression);
+    }
+
+    private Expression parseArrayLiteral() {
+        Token bracket = curToken;
+        List<Expression> members = new LinkedList<>();
+
+        if (peekToken.isToken(TokenType.RSQB)) {
+            nextToken();
+            return new ArrayExpression(bracket, members);
+        }
+
+        nextToken();
+        members.add(parseExpression());
+        nextToken();
+
+        while (curToken.isToken(TokenType.COMMA)) {
+            nextToken();
+            members.add(parseExpression());
+            nextToken();
+        }
+
+        if (!curToken.isToken(TokenType.RSQB)) {
+            throw new ParseException("Array should end with ']'");
+        }
+
+        nextToken();
+
+        return new ArrayExpression(bracket, members);
+    }
+
+    private Expression parseNormalInfixOperator(Expression leftExp) {
+        Token infixOp = curToken;
+        nextToken();
+        Expression rightExp = parseExpression(infixPrecedence(infixOp.getType()));
+        return new InfixExpression(infixOp, leftExp, rightExp);
+    }
+
+    private Expression parseDictLiteral() {
+        Token brace = curToken;
+        Map<String, Expression> dict = new HashMap<>();
+        return null;
     }
 }

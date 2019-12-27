@@ -19,6 +19,7 @@ public class IndexExpression implements Expression {
         this.number = number;
     }
 
+    @Override
     public Token currentToken() {
         return token;
     }
