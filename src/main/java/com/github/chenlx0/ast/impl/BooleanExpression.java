@@ -1,7 +1,7 @@
 package com.github.chenlx0.ast.impl;
 
 import com.github.chenlx0.ast.Expression;
-import com.github.chenlx0.lexer.Token;
+import com.github.chenlx0.ast.NodeType;
 
 /**
  * @author: Chen Lixiang
@@ -10,16 +10,13 @@ import com.github.chenlx0.lexer.Token;
 public class BooleanExpression implements Expression {
     private Boolean val;
 
-    private Token token;
-
-    public BooleanExpression(Token token, Boolean val) {
-        this.token = token;
+    public BooleanExpression(Boolean val) {
         this.val = val;
     }
 
     @Override
-    public Token currentToken() {
-        return token;
+    public NodeType nodeType() {
+        return NodeType.BOOLEAN;
     }
 
     public Boolean getVal() {

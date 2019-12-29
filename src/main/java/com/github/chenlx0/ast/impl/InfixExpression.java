@@ -1,28 +1,25 @@
 package com.github.chenlx0.ast.impl;
 
 import com.github.chenlx0.ast.Expression;
-import com.github.chenlx0.lexer.Token;
+import com.github.chenlx0.ast.NodeType;
 
 /**
  * @author: Chen Lixiang
  * @date: 2019-12-20
  */
 public class InfixExpression implements Expression {
-    private Token token;
-
     private Expression LeftExpression;
 
     private Expression RightExpression;
 
-    public InfixExpression(Token token, Expression left, Expression right) {
-        this.token = token;
+    public InfixExpression(Expression left, Expression right) {
         this.LeftExpression = left;
         this.RightExpression = right;
     }
 
     @Override
-    public Token currentToken() {
-        return token;
+    public NodeType nodeType() {
+        return NodeType.INFIX;
     }
 
     public Expression getLeftExpression() {

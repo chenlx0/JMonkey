@@ -213,6 +213,8 @@ public class Lexer {
                 return Token.buildToken(Token.TokenType.IF, result);
             case "else":
                 return Token.buildToken(Token.TokenType.ELSE, result);
+            case "while":
+                return Token.buildToken(Token.TokenType.WHILE, result);
             default:
                 return Token.buildToken(Token.TokenType.VAR, result);
         }

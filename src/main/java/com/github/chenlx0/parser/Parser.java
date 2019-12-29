@@ -61,9 +61,11 @@ public class Parser {
                 return parseLetStatement();
             case RET:
                 return parseReturnStatement();
-            default:
-                return parseExpressionStatement();
         }
+        if (curToken.isToken(TokenType.SEMI)) {
+            nextToken();
+        }
+        return parseExpressionStatement();
     }
 
     private short infixPrecedence(TokenType tokenType) {
@@ -85,6 +87,14 @@ public class Parser {
                 return parseOperatorPrefix();
             case LSQB:
                 return parseArrayLiteral();
+            case LBRACE:
+                return parseDictLiteral();
+            case LPAR:
+                return parseParenthese();
+            case FUNC:
+                return parseFunctionLiteral();
+            case IF: case WHILE:
+                return parseConditionLiteral();
             default:
                 throw new ParseException("can not parse prefix token: " + curToken.getVal());
         }
@@ -92,11 +102,25 @@ public class Parser {
 
     private Expression parseInfix(Expression leftExp) {
         switch (curToken.getType()) {
-            case PLUS: case MINUS: case MULTI: case DIV:
+            case PLUS: case MINUS: case MULTI: case DIV: case NOTEQUAL:
+            case LESS: case GREATER: case GREATEQ: case LESSEQ: case EQEQUAL:
                 return parseNormalInfixOperator(leftExp);
+            case LSQB:
+                return parseIndex(leftExp);
             default:
                 return null;
         }
+    }
+
+    private BlockStatements parseBlockStatements() {
+        Statement st;
+        List<Statement> result = new LinkedList<>();
+        nextToken();
+        while (!peekToken.isToken(TokenType.RBRACE) && (st = parseStatement()) != null) {
+            result.add(st);
+        }
+        nextToken(); nextToken();
+        return new BlockStatements(result);
     }
 
     private Expression parseExpression() {
@@ -120,7 +144,6 @@ public class Parser {
     }
 
     private Statement parseLetStatement() {
-        Token letToken = curToken;
         expect(TokenType.VAR);
         nextToken();
         Token varToken = curToken;
@@ -131,7 +154,8 @@ public class Parser {
         if (peekToken.isToken(TokenType.SEMI)) {
             nextToken();
         }
-        return new LetStatement(letToken, varToken, signExpression);
+        VariableExpression var = new VariableExpression(varToken);
+        return new LetStatement(var, signExpression);
     }
 
     private Statement parseReturnStatement() {
@@ -141,13 +165,13 @@ public class Parser {
         if (peekToken.isToken(TokenType.SEMI)) {
             nextToken();
         }
-        return new ReturnStatement(retToken, retExpression);
+        return new ReturnStatement(retExpression);
     }
 
     private Statement parseExpressionStatement() {
         Token start = curToken;
         Expression exp = parseExpression();
-        Statement stmt = new ExpressionStatement(start, exp);
+        Statement stmt = new ExpressionStatement(exp);
         if (peekToken.isToken(TokenType.SEMI)) {
             nextToken();
         }
@@ -158,13 +182,13 @@ public class Parser {
         try {
             if (curToken.getVal().contains(".")) {
                 Double val = Double.valueOf(curToken.getVal());
-                return new NumberExpression(curToken, val);
+                return new NumberExpression(val);
             } else {
                 Integer val = Integer.valueOf(curToken.getVal());
-                return new NumberExpression(curToken, val);
+                return new NumberExpression(val);
             }
         } catch (NumberFormatException e) {
-            throw new ParseException("Parse number: " + curToken.getVal() + " failed.");
+            throw new ParseException("Parse number: '" + curToken.getVal() + "' failed.");
         }
     }
 
@@ -175,9 +199,9 @@ public class Parser {
     private Expression parseBooleanLiteral() {
         Expression result;
         if (curToken.isToken(TokenType.TRUE)) {
-            result = new BooleanExpression(curToken, true);
+            result = new BooleanExpression(true);
         } else {
-            result = new BooleanExpression(curToken,false);
+            result = new BooleanExpression(false);
         }
         return result;
     }
@@ -188,10 +212,9 @@ public class Parser {
     }
 
     private Expression parseOperatorPrefix() {
-        Token tmpToken = curToken;
         nextToken();
         Expression nextExpression = parseExpression(Consts.PREFIX);
-        return new OperatorPrefixExpression(tmpToken, nextExpression);
+        return new OperatorPrefixExpression(nextExpression);
     }
 
     private Expression parseArrayLiteral() {
@@ -200,7 +223,7 @@ public class Parser {
 
         if (peekToken.isToken(TokenType.RSQB)) {
             nextToken();
-            return new ArrayExpression(bracket, members);
+            return new ArrayExpression(members);
         }
 
         nextToken();
@@ -219,19 +242,87 @@ public class Parser {
 
         nextToken();
 
-        return new ArrayExpression(bracket, members);
+        return new ArrayExpression(members);
+    }
+
+    private Expression parseDictLiteral() {
+        Map<String, Expression> dict = new HashMap<>();
+        return null;
     }
 
     private Expression parseNormalInfixOperator(Expression leftExp) {
         Token infixOp = curToken;
         nextToken();
         Expression rightExp = parseExpression(infixPrecedence(infixOp.getType()));
-        return new InfixExpression(infixOp, leftExp, rightExp);
+        return new InfixExpression(leftExp, rightExp);
     }
 
-    private Expression parseDictLiteral() {
-        Token brace = curToken;
-        Map<String, Expression> dict = new HashMap<>();
-        return null;
+    private Expression parseConditionLiteral() {
+        Token condToken = curToken;
+        expect(TokenType.LPAR);
+        nextToken(); nextToken();
+        Expression conditionExp = parseExpression();
+
+        expect(TokenType.RPAR);
+        nextToken();
+        expect(TokenType.LBRACE);
+        nextToken();
+        BlockStatements blockStatements = parseBlockStatements();
+
+        if (condToken.isToken(TokenType.IF)) {
+            return new IfExpression(conditionExp, blockStatements);
+        } else if (condToken.isToken(TokenType.WHILE)) {
+            return new WhileExpression(conditionExp, blockStatements);
+        } else {
+            throw new ParseException("unknown condition");
+        }
+    }
+
+    private Expression parseFunctionLiteral() {
+        expect(TokenType.LPAR);
+        nextToken();
+
+        // parse parameters
+        List<VariableExpression> parameters = new LinkedList<>();
+        while (!curToken.isToken(TokenType.RPAR)) {
+            expect(TokenType.VAR);
+            nextToken();
+            parameters.add((VariableExpression) parseVariableLiteral());
+            if (peekToken.isToken(TokenType.RPAR)) break;
+            expect(TokenType.COMMA);
+            nextToken();
+        }
+
+        nextToken();
+        expect(TokenType.LBRACE);
+        nextToken();
+        BlockStatements statements = parseBlockStatements();
+        return new FunctionExpression(parameters, statements);
+    }
+
+    private Expression parseIndex(Expression leftExp) {
+        Expression index;
+        // index must be number or string
+        if (peekToken.isToken(TokenType.NUMBER)) {
+            nextToken();
+            index = parseNumberLiteral();
+        } else if (peekToken.isToken(TokenType.STRING)) {
+            nextToken();
+            index = parseStringLiteral();
+        } else {
+            throw new ParseException("index must be number or string");
+        }
+        expect(TokenType.RSQB);
+        nextToken();
+
+        return new IndexExpression(leftExp, index);
+    }
+
+    private Expression parseParenthese() {
+        nextToken();
+        Expression exp = parseExpression();
+        expect(TokenType.RPAR);
+        nextToken();
+        return exp;
     }
 }

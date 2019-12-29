@@ -1,6 +1,7 @@
 package com.github.chenlx0.ast.impl;
 
 import com.github.chenlx0.ast.Expression;
+import com.github.chenlx0.ast.NodeType;
 import com.github.chenlx0.lexer.Token;
 
 import java.util.List;
@@ -10,17 +11,14 @@ import java.util.List;
  * @date: 2019-12-26
  */
 public class ArrayExpression implements Expression {
-    private Token token;
-
     private List<Expression> arrayMembers;
 
     @Override
-    public Token currentToken() {
-        return token;
+    public NodeType nodeType() {
+        return NodeType.ARRAY;
     }
 
-    public ArrayExpression(Token token, List<Expression> arrayMembers) {
-        this.token = token;
+    public ArrayExpression(List<Expression> arrayMembers) {
         this.arrayMembers = arrayMembers;
     }
 

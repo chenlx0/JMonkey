@@ -1,6 +1,7 @@
 package com.github.chenlx0.ast.impl;
 
 import com.github.chenlx0.ast.Expression;
+import com.github.chenlx0.ast.NodeType;
 import com.github.chenlx0.lexer.Token;
 
 /**
@@ -8,19 +9,25 @@ import com.github.chenlx0.lexer.Token;
  * @date: 2019-12-20
  */
 public class IndexExpression implements Expression {
-    public Token token;
+    private Expression index;
 
-    public Token number;
+    private Expression leftExp;
 
-    public IndexExpression(Token token, Token number) {
-        assert token.isToken(Token.TokenType.VAR);
-        assert number.isToken(Token.TokenType.NUMBER);
-        this.token = token;
-        this.number = number;
+    public IndexExpression(Expression leftExp, Expression index) {
+        this.leftExp = leftExp;
+        this.index = index;
     }
 
     @Override
-    public Token currentToken() {
-        return token;
+    public NodeType nodeType() {
+        return NodeType.INDEX;
+    }
+
+    public Expression getLeftExp() {
+        return leftExp;
+    }
+
+    public Expression getIndex() {
+        return index;
     }
 }

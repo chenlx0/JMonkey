@@ -35,6 +35,8 @@ public class Consts {
         InfixPrecedence.put(Token.TokenType.MULTI, PRODUCT);
         InfixPrecedence.put(Token.TokenType.DIV, PRODUCT);
         InfixPrecedence.put(Token.TokenType.ASSIGN, SUM);
+        InfixPrecedence.put(Token.TokenType.LSQB, PREFIX);
+        InfixPrecedence.put(Token.TokenType.NOTEQUAL, EQEQUAL);
     }
 
     // Infix or Prefix Operator

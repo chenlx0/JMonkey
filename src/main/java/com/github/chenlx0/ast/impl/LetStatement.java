@@ -1,6 +1,7 @@
 package com.github.chenlx0.ast.impl;
 
 import com.github.chenlx0.ast.Expression;
+import com.github.chenlx0.ast.NodeType;
 import com.github.chenlx0.ast.Statement;
 import com.github.chenlx0.lexer.Token;
 
@@ -9,25 +10,22 @@ import com.github.chenlx0.lexer.Token;
  * @date: 2019-12-20
  */
 public class LetStatement implements Statement {
-    private Token token; // The Token.LET
-
-    private Token variable;
+    private VariableExpression variable;
 
     private Expression expression;
 
-    public LetStatement(Token token, Token variable, Expression expression) {
-        this.token = token;
+    public LetStatement(VariableExpression variable, Expression expression) {
         this.variable = variable;
         this.expression = expression;
     }
 
     @Override
-    public Token currentToken() {
-        return token;
+    public NodeType nodeType() {
+        return NodeType.LET;
     }
 
-    public String getIdentifier() {
-        return variable.getVal();
+    public VariableExpression getVariable() {
+        return variable;
     }
 
     public Expression getExpression() {

@@ -1,7 +1,7 @@
 package com.github.chenlx0.ast.impl;
 
 import com.github.chenlx0.ast.Expression;
-import com.github.chenlx0.lexer.Token;
+import com.github.chenlx0.ast.NodeType;
 
 
 /**
@@ -9,8 +9,6 @@ import com.github.chenlx0.lexer.Token;
  * @date: 2019-12-21
  */
 public class NumberExpression implements Expression {
-    private Token token;
-
     private boolean isInteger;
 
     private Double doubleVal;
@@ -18,18 +16,16 @@ public class NumberExpression implements Expression {
     private Integer integerVal;
 
     @Override
-    public Token currentToken() {
-        return token;
+    public NodeType nodeType() {
+        return NodeType.NUMBER;
     }
 
-    public NumberExpression(Token token, Double val) {
-        this.token = token;
+    public NumberExpression(Double val) {
         this.isInteger = false;
         this.doubleVal = val;
     }
 
-    public NumberExpression(Token token, Integer val) {
-        this.token = token;
+    public NumberExpression(Integer val) {
         this.isInteger = true;
         this.integerVal = val;
     }

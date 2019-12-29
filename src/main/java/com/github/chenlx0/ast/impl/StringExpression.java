@@ -1,6 +1,7 @@
 package com.github.chenlx0.ast.impl;
 
 import com.github.chenlx0.ast.Expression;
+import com.github.chenlx0.ast.NodeType;
 import com.github.chenlx0.lexer.Token;
 
 /**
@@ -8,18 +9,15 @@ import com.github.chenlx0.lexer.Token;
  * @date: 2019-12-20
  */
 public class StringExpression implements Expression {
-    private Token token;
-
     private String val;
 
     public StringExpression(Token token) {
-        this.token = token;
         this.val = token.getVal();
     }
 
     @Override
-    public Token currentToken() {
-        return token;
+    public NodeType nodeType() {
+        return NodeType.STRING;
     }
 
     public String getVal() {

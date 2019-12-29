@@ -10,7 +10,7 @@ public class TokenGenerateExample {
     public static void main(String[] args) {
         String text = "let x = 3;" +
                 "fn(y) {" +
-                "if (y > 10) { return y + 77; }" +
+                "if (y > 10) { return [1,2,3,4,5]; }" +
                 "print(\"OK!\")" +
                 "return y + 100.77;" +
                 "}";

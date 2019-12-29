@@ -1,8 +1,8 @@
 package com.github.chenlx0.ast.impl;
 
 import com.github.chenlx0.ast.Node;
+import com.github.chenlx0.ast.NodeType;
 import com.github.chenlx0.ast.Statement;
-import com.github.chenlx0.lexer.Token;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,9 +19,13 @@ public class Program implements Node {
         statements.add(statement);
     }
 
-    public Token currentToken() {
+    public NodeType nodeType() {
         if (statements.isEmpty())
             return null;
-        return statements.get(0).currentToken();
+        return statements.get(0).nodeType();
+    }
+
+    public List<Statement> getStatements() {
+        return statements;
     }
 }

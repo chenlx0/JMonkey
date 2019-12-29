@@ -1,7 +1,7 @@
 package com.github.chenlx0.ast.impl;
 
 import com.github.chenlx0.ast.Expression;
-import com.github.chenlx0.lexer.Token;
+import com.github.chenlx0.ast.NodeType;
 
 /**
  * @author: Chen Lixiang
@@ -9,21 +9,18 @@ import com.github.chenlx0.lexer.Token;
  */
 public class OperatorPrefixExpression implements Expression {
 
-    private Token token;
-
     private Expression nextExpression;
 
     @Override
-    public Token currentToken() {
-        return token;
+    public NodeType nodeType() {
+        return NodeType.PREFIX;
     }
 
     public Expression getNextExpression() {
         return nextExpression;
     }
 
-    public OperatorPrefixExpression(Token token, Expression nextExpression) {
-        this.token = token;
+    public OperatorPrefixExpression(Expression nextExpression) {
         this.nextExpression = nextExpression;
     }
 }
