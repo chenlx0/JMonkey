@@ -223,9 +223,10 @@ public class Parser {
     }
 
     private Expression parseOperatorPrefix() {
+        Token operatorToken = curToken;
         nextToken();
         Expression nextExpression = parseExpression(Consts.PREFIX);
-        return new OperatorPrefixExpression(nextExpression);
+        return new PrefixExpression(nextExpression, operatorToken.getType());
     }
 
     private Expression parseArrayLiteral() {

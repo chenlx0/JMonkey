@@ -2,7 +2,6 @@ package com.github.chenlx0.ast.impl;
 
 import com.github.chenlx0.ast.Expression;
 import com.github.chenlx0.ast.NodeType;
-import com.github.chenlx0.lexer.Token;
 
 /**
  * @author: Chen Lixiang
