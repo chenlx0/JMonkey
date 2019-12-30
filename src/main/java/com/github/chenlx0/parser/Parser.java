@@ -104,11 +104,14 @@ public class Parser {
         switch (curToken.getType()) {
             case PLUS: case MINUS: case MULTI: case DIV: case NOTEQUAL:
             case LESS: case GREATER: case GREATEQ: case LESSEQ: case EQEQUAL:
+            case XOR: case AND: case AMPER: case OR: case VBAR:
                 return parseNormalInfixOperator(leftExp);
             case LSQB:
                 return parseIndex(leftExp);
+            case LPAR:
+                return parseCall(leftExp);
             default:
-                return null;
+                throw new ParseException("unknown infix type");
         }
     }
 
@@ -276,7 +279,7 @@ public class Parser {
         nextToken();
 
         Expression rightExp = parseExpression(infixPrecedence(infixOp.getType()));
-        return new InfixExpression(leftExp, rightExp);
+        return new InfixExpression(leftExp, rightExp, infixOp.getType());
     }
 
     private Expression parseConditionLiteral() {
@@ -321,6 +324,25 @@ public class Parser {
         BlockStatements statements = parseBlockStatements();
 
         return new FunctionExpression(parameters, statements);
+    }
+
+    private Expression parseCall(Expression leftExp) {
+
+        List<Expression> parameters = new LinkedList<>();
+        nextToken();
+        while (!curToken.isToken(TokenType.RPAR)) {
+            Expression arg = parseExpression();
+            parameters.add(arg);
+            if (peekToken.isToken(TokenType.RPAR)) {
+                nextToken();
+                break;
+            }
+            expect(TokenType.COMMA);
+            nextToken(); nextToken();
+        }
+        nextToken();
+
+        return new CallExpression(leftExp, parameters);
     }
 
     private Expression parseIndex(Expression leftExp) {

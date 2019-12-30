@@ -2,6 +2,7 @@ package com.github.chenlx0.ast.impl;
 
 import com.github.chenlx0.ast.Expression;
 import com.github.chenlx0.ast.NodeType;
+import com.github.chenlx0.lexer.Token;
 
 /**
  * @author: Chen Lixiang
@@ -12,9 +13,12 @@ public class InfixExpression implements Expression {
 
     private Expression RightExpression;
 
-    public InfixExpression(Expression left, Expression right) {
+    private Token.TokenType operatorTokenType;
+
+    public InfixExpression(Expression left, Expression right, Token.TokenType operatorTokenType) {
         this.LeftExpression = left;
         this.RightExpression = right;
+        this.operatorTokenType = operatorTokenType;
     }
 
     @Override
@@ -28,5 +32,9 @@ public class InfixExpression implements Expression {
 
     public Expression getRightExpression() {
         return RightExpression;
+    }
+
+    public Token.TokenType getOperatorTokenType() {
+        return operatorTokenType;
     }
 }

@@ -30,6 +30,11 @@ public class Consts {
         InfixPrecedence.put(Token.TokenType.LESSEQ, LEGT);
         InfixPrecedence.put(Token.TokenType.GREATER, LEGT);
         InfixPrecedence.put(Token.TokenType.LESS, LEGT);
+        InfixPrecedence.put(Token.TokenType.XOR, LEGT);
+        InfixPrecedence.put(Token.TokenType.OR, LEGT);
+        InfixPrecedence.put(Token.TokenType.AND, LEGT);
+        InfixPrecedence.put(Token.TokenType.AMPER, LEGT);
+        InfixPrecedence.put(Token.TokenType.VBAR, LEGT);
         InfixPrecedence.put(Token.TokenType.PLUS, SUM);
         InfixPrecedence.put(Token.TokenType.MINUS, SUM);
         InfixPrecedence.put(Token.TokenType.MULTI, PRODUCT);
@@ -37,6 +42,7 @@ public class Consts {
         InfixPrecedence.put(Token.TokenType.ASSIGN, SUM);
         InfixPrecedence.put(Token.TokenType.LSQB, PREFIX);
         InfixPrecedence.put(Token.TokenType.NOTEQUAL, EQEQUAL);
+        InfixPrecedence.put(Token.TokenType.LPAR, CALL);
     }
 
     // Infix or Prefix Operator

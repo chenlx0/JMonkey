@@ -19,6 +19,7 @@ public enum NodeType {
     VARIABLE,
     WHILE,
     FUNCTION,
+    CALL,
     BLOCK_STATEMENT,
     EXPRESSION_STATEMENT,
 }
