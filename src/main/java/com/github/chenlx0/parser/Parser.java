@@ -116,9 +116,11 @@ public class Parser {
         Statement st;
         List<Statement> result = new LinkedList<>();
         nextToken();
+
         while (!peekToken.isToken(TokenType.RBRACE) && (st = parseStatement()) != null) {
             result.add(st);
         }
+
         nextToken(); nextToken();
         return new BlockStatements(result);
     }
@@ -150,31 +152,35 @@ public class Parser {
         expect(TokenType.ASSIGN);
         nextToken();
         nextToken();
+
         Expression signExpression = parseExpression();
         if (peekToken.isToken(TokenType.SEMI)) {
             nextToken();
         }
+
         VariableExpression var = new VariableExpression(varToken);
         return new LetStatement(var, signExpression);
     }
 
     private Statement parseReturnStatement() {
-        Token retToken = curToken;
         nextToken();
         Expression retExpression = parseExpression();
+
         if (peekToken.isToken(TokenType.SEMI)) {
             nextToken();
         }
+
         return new ReturnStatement(retExpression);
     }
 
     private Statement parseExpressionStatement() {
-        Token start = curToken;
         Expression exp = parseExpression();
         Statement stmt = new ExpressionStatement(exp);
+
         if (peekToken.isToken(TokenType.SEMI)) {
             nextToken();
         }
+
         return stmt;
     }
 
@@ -198,11 +204,13 @@ public class Parser {
 
     private Expression parseBooleanLiteral() {
         Expression result;
+
         if (curToken.isToken(TokenType.TRUE)) {
             result = new BooleanExpression(true);
         } else {
             result = new BooleanExpression(false);
         }
+
         return result;
     }
 
@@ -218,7 +226,6 @@ public class Parser {
     }
 
     private Expression parseArrayLiteral() {
-        Token bracket = curToken;
         List<Expression> members = new LinkedList<>();
 
         if (peekToken.isToken(TokenType.RSQB)) {
@@ -246,13 +253,28 @@ public class Parser {
     }
 
     private Expression parseDictLiteral() {
-        Map<String, Expression> dict = new HashMap<>();
-        return null;
+        Map<StringExpression, Expression> dict = new HashMap<>();
+
+        while (!peekToken.isToken(TokenType.RBRACE)) {
+            expect(TokenType.STRING);
+            nextToken();
+            StringExpression key = (StringExpression) parseStringLiteral();
+            expect(TokenType.COLON);
+            nextToken(); nextToken();
+            Expression val = parseExpression();
+            dict.put(key, val);
+        }
+
+        nextToken(); nextToken();
+
+        return new DictionaryExpression(dict);
     }
 
     private Expression parseNormalInfixOperator(Expression leftExp) {
         Token infixOp = curToken;
+
         nextToken();
+
         Expression rightExp = parseExpression(infixPrecedence(infixOp.getType()));
         return new InfixExpression(leftExp, rightExp);
     }
@@ -284,7 +306,7 @@ public class Parser {
 
         // parse parameters
         List<VariableExpression> parameters = new LinkedList<>();
-        while (!curToken.isToken(TokenType.RPAR)) {
+        while (!peekToken.isToken(TokenType.RPAR)) {
             expect(TokenType.VAR);
             nextToken();
             parameters.add((VariableExpression) parseVariableLiteral());
@@ -297,11 +319,13 @@ public class Parser {
         expect(TokenType.LBRACE);
         nextToken();
         BlockStatements statements = parseBlockStatements();
+
         return new FunctionExpression(parameters, statements);
     }
 
     private Expression parseIndex(Expression leftExp) {
         Expression index;
+
         // index must be number or string
         if (peekToken.isToken(TokenType.NUMBER)) {
             nextToken();
@@ -312,6 +336,7 @@ public class Parser {
         } else {
             throw new ParseException("index must be number or string");
         }
+
         expect(TokenType.RSQB);
         nextToken();
 

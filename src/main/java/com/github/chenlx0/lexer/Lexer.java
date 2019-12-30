@@ -106,6 +106,8 @@ public class Lexer {
                 return Token.buildToken(Token.TokenType.GREATER, ">");
             case '<':
                 return Token.buildToken(Token.TokenType.LESS, "<");
+            case ':':
+                return Token.buildToken(Token.TokenType.COLON, ":");
         }
 
         unsetchar();

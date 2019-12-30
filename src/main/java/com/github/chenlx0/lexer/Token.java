@@ -4,7 +4,7 @@ public class Token {
     public enum TokenType { EOF, NUMBER, STRING, LET, FUNC, TRUE, FALSE, RET, VAR, UNKNOWN,
                             IF, ELSE, LBRACE, RBRACE, EQEQUAL, NOTEQUAL, AND, OR, XOR, COMMA,
                             ASSIGN, AMPER, VBAR, PLUS, MINUS, MULTI, DIV, GREATER, LESS, EXCL,
-                            LSQB, RSQB, LPAR, RPAR, SEMI, GREATEQ, LESSEQ, WHILE }
+                            LSQB, RSQB, LPAR, RPAR, SEMI, GREATEQ, LESSEQ, WHILE, COLON }
 
     private TokenType type;
 
