@@ -10,6 +10,6 @@ public class ParseException extends MonkeyException {
 
     @Override
     public String toString() {
-        return "Parse program failed: " + msg;
+        return "[PARSE CODE FAILED]" + msg;
     }
 }
