@@ -1,5 +1,6 @@
 package com.github.chenlx0.evaluator;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -11,6 +12,10 @@ public class Environment {
     private Environment outer;
 
     private Map<String, Object> store;
+
+    public Environment() {
+        this.store = new HashMap<>();
+    }
 
     public Environment getOuter() {
         return outer;

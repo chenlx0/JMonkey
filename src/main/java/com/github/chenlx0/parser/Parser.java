@@ -262,11 +262,13 @@ public class Parser {
         while (!peekToken.isToken(TokenType.RBRACE)) {
             expect(TokenType.STRING);
             nextToken();
-            StringExpression key = (StringExpression) parseStringLiteral();
             expect(TokenType.COLON);
+            StringExpression key = (StringExpression) parseStringLiteral();
             nextToken(); nextToken();
             Expression val = parseExpression();
+            nextToken();
             dict.put(key, val);
+            if (curToken.isToken(TokenType.RBRACE)) break;
         }
 
         nextToken(); nextToken();

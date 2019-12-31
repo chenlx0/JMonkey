@@ -2,6 +2,8 @@ package com.github.chenlx0.evaluator;
 
 import com.github.chenlx0.ast.Expression;
 import com.github.chenlx0.ast.Node;
+import com.github.chenlx0.ast.NodeType;
+import com.github.chenlx0.ast.Statement;
 import com.github.chenlx0.ast.impl.*;
 import com.github.chenlx0.util.EvalException;
 
@@ -21,6 +23,7 @@ public class Evaluator {
     private static Map<String, String> typeMap;
     static
     {
+        typeMap = new HashMap<>();
         typeMap.put("java.util.ArrayList", "Array");
         typeMap.put("java.util.HashMap", "Dict");
         typeMap.put("java.lang.Integer", "Int");
@@ -34,7 +37,16 @@ public class Evaluator {
     }
 
     public void evalProgram(Program program) {
+        List<Statement> nodes = program.getStatements();
 
+        for (Statement st : nodes) {
+            if (st.nodeType() == NodeType.EXPRESSION_STATEMENT) {
+                ExpressionStatement est = (ExpressionStatement) st;
+                eval(est.getExpression(), this.globalEnv);
+            } else {
+                eval(st, globalEnv);
+            }
+        }
     }
 
     public Object eval(Node node, Environment env) {
@@ -102,40 +114,88 @@ public class Evaluator {
 
     private Object evalInfix(InfixExpression infixExpression, Environment env) {
         switch (infixExpression.getOperatorTokenType()) {
-            case PLUS:
-                return evalInfixPlus(infixExpression, env);
-            case MULTI:
+            case PLUS: case MULTI: case MINUS: case DIV:
+            case EQEQUAL: case NOTEQUAL: case LESS: case GREATER:
+            case LESSEQ: case GREATEQ:
+                return evalInfixPuzzle(infixExpression, env);
 
         }
 
         return null;
     }
 
-    private Object evalInfixPlus(InfixExpression infixExpression, Environment env) {
+    private Object evalInfixPuzzle(InfixExpression infixExpression, Environment env) {
         Object leftVal = eval(infixExpression.getLeftExpression(), env);
         Object rightVal = eval(infixExpression.getRightExpression(), env);
         String leftType = leftVal.getClass().getName();
         String rightType = rightVal.getClass().getName();
 
+        // if type a number type is double and another type is int
+        // convert int to double
+        if (leftType.equals("java.lang.Integer") && rightType.equals("java.lang.Double")) {
+            leftType = "java.lang.Double";
+            leftVal = Double.valueOf((Integer) leftVal);
+        } else if (leftType.equals("java.lang.Double") && rightType.equals("java.lang.Integer")) {
+            rightType = "java.lang.Double";
+            rightVal = Double.valueOf((Integer) rightVal);
+        }
+
         if (leftType.equals(rightType)) {
             if (leftType.equals("java.lang.Integer")) {
-                return (Integer) leftVal + (Integer) rightVal;
+                Integer leftValInt = (Integer) leftVal;
+                Integer rightValInt = (Integer) rightVal;
+                switch (infixExpression.getOperatorTokenType()) {
+                    case PLUS:
+                        return leftValInt + rightValInt;
+                    case MULTI:
+                        return leftValInt * rightValInt;
+                    case MINUS:
+                        return leftValInt - rightValInt;
+                    case DIV:
+                        return leftValInt / rightValInt;
+                    case EQEQUAL:
+                        return leftValInt.intValue() == rightValInt.intValue();
+                    case NOTEQUAL:
+                        return leftValInt.intValue() != rightValInt.intValue();
+                    case GREATEQ:
+                        return leftValInt >= rightValInt;
+                    case GREATER:
+                        return leftValInt > rightValInt;
+                    case LESSEQ:
+                        return leftValInt <= rightValInt;
+                    case LESS:
+                        return leftValInt < rightValInt;
+                }
             } else if (leftType.equals("java.lang.Double")) {
-                return (Double) leftVal + (Double) rightVal;
-            } else if (leftType.equals("java.lang.String")) {
-                return (String) leftVal + (String) rightVal;
+                Double leftValDouble = (Double) leftVal;
+                Double rightValDouble = (Double) rightVal;
+                switch (infixExpression.getOperatorTokenType()) {
+                    case PLUS:
+                        return leftValDouble + rightValDouble;
+                    case MULTI:
+                        return leftValDouble * rightValDouble;
+                    case MINUS:
+                        return leftValDouble - rightValDouble;
+                    case DIV:
+                        return leftValDouble / rightValDouble;
+                    case EQEQUAL:
+                        return leftValDouble.doubleValue() == rightValDouble.doubleValue();
+                    case NOTEQUAL:
+                        return leftValDouble.doubleValue() != rightValDouble.doubleValue();
+                    case GREATEQ:
+                        return leftValDouble >= rightValDouble;
+                    case GREATER:
+                        return leftValDouble > rightValDouble;
+                    case LESSEQ:
+                        return leftValDouble <= rightValDouble;
+                    case LESS:
+                        return leftValDouble < rightValDouble;
+                }
             }
 
             throw new EvalException(String.format("can not apply infix '%s' to %s and %s",
                     infixExpression.getOperatorTokenType().name(), typeMap.get(leftType), typeMap.get(rightType)));
         } else {
-            // only available when left and right are both number (Double and Integer)
-            if (leftType.equals("java.lang.Integer") && rightType.equals("java.lang.Double")) {
-                return (Integer) leftVal + (Double) rightVal;
-            } else if (rightType.equals("java.lang.Integer") && leftType.equals("java.lang.Double")) {
-                return (Double) leftVal + (Integer) rightVal;
-            }
-
             throw new EvalException(String.format("can not apply infix '%s' to %s and %s",
                     infixExpression.getOperatorTokenType().name(), typeMap.get(leftType), typeMap.get(rightType)));
         }
