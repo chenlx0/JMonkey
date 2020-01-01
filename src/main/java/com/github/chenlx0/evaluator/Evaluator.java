@@ -57,8 +57,16 @@ public class Evaluator {
 
     public Object eval(Node node, Environment env) {
         switch (node.nodeType()) {
+            case BLOCK_STATEMENT:
+                BlockStatements blockStatements = (BlockStatements) node;
+                List<Statement> nodes = blockStatements.getStatements();
+                return evalStatements(nodes, env);
             case NUMBER: case STRING: case BOOLEAN:
                 return evalSingle((Expression) node);
+            case IF:
+                return evalIf((IfExpression) node, env);
+            case WHILE:
+                return evalWhile((WhileExpression) node, env);
             case LET:
                 return evalLet((LetStatement) node, env);
             case VARIABLE:
@@ -283,7 +291,26 @@ public class Evaluator {
         return retDict;
     }
 
-    private void evalIf(IfExpression ifExpression, Environment env) {
+    private Object evalIf(IfExpression ifExpression, Environment env) {
+        Boolean condition = (Boolean) eval(ifExpression.getCondition(), env);
 
+        if (condition) {
+            return eval(ifExpression.getBlocks(), env);
+        }
+
+        return null;
+    }
+
+    private Object evalWhile(WhileExpression whileExpression, Environment env) {
+        Expression conditionExp = whileExpression.getCondition();
+        Object ret = null;
+
+        for (boolean cond = (Boolean) eval(conditionExp, env);
+             cond;
+             cond = (Boolean) eval(conditionExp, env)) {
+            ret = eval(whileExpression.getBlocks(), env);
+        }
+
+        return ret;
     }
 }

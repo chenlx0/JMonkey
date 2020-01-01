@@ -23,11 +23,11 @@ public class Main {
         Object object = null;
         System.out.printf("JMonkey %s\n", Consts.VERSION);
         do {
-            System.out.print(">>");
-            code = scanner.nextLine();
-            if (code.startsWith("exit()")) break;
-            Program program = parser.parseProgram(code);
             try {
+                System.out.print(">>");
+                code = scanner.nextLine();
+                if (code.startsWith("exit()")) break;
+                Program program = parser.parseProgram(code);
                 object = evaluator.evalProgram(program);
                 System.out.println(object);
             } catch (MonkeyException mke) {
