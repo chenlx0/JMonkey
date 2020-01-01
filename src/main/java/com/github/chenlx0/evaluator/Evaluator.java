@@ -36,17 +36,23 @@ public class Evaluator {
         globalEnv = new Environment();
     }
 
-    public void evalProgram(Program program) {
+    public Object evalProgram(Program program) {
         List<Statement> nodes = program.getStatements();
+        return evalStatements(nodes, this.globalEnv);
+    }
 
+    private Object evalStatements(List<Statement> nodes, Environment env) {
+        Object ret = null;
         for (Statement st : nodes) {
             if (st.nodeType() == NodeType.EXPRESSION_STATEMENT) {
                 ExpressionStatement est = (ExpressionStatement) st;
-                eval(est.getExpression(), this.globalEnv);
+                ret = eval(est.getExpression(), env);
             } else {
-                eval(st, globalEnv);
+                ret = eval(st, env);
             }
         }
+
+        return ret;
     }
 
     public Object eval(Node node, Environment env) {
@@ -55,6 +61,8 @@ public class Evaluator {
                 return evalSingle((Expression) node);
             case LET:
                 return evalLet((LetStatement) node, env);
+            case VARIABLE:
+                return evalVariable((VariableExpression) node, env);
             case ARRAY:
                 return evalArray((ArrayExpression) node, env);
             case DICT:
@@ -63,6 +71,8 @@ public class Evaluator {
                 return evalPrefix((PrefixExpression) node, env);
             case INFIX:
                 return evalInfix((InfixExpression) node, env);
+            case INDEX:
+                return evalIndex((IndexExpression) node, env);
         }
 
         throw new EvalException("can not eval node type: " + node.nodeType().name());
@@ -83,6 +93,11 @@ public class Evaluator {
         }
 
         return null;
+    }
+
+    private Object evalVariable(VariableExpression varExp, Environment env) {
+        String varName = varExp.getLiteral();
+        return env.getStore().get(varName);
     }
 
     private Object evalPrefix(PrefixExpression prefixExpression, Environment env) {
@@ -118,10 +133,9 @@ public class Evaluator {
             case EQEQUAL: case NOTEQUAL: case LESS: case GREATER:
             case LESSEQ: case GREATEQ:
                 return evalInfixPuzzle(infixExpression, env);
-
         }
 
-        return null;
+        throw new EvalException(String.format("can not eval infix operator '%s'", infixExpression.getOperatorTokenType()));
     }
 
     private Object evalInfixPuzzle(InfixExpression infixExpression, Environment env) {
@@ -191,6 +205,15 @@ public class Evaluator {
                     case LESS:
                         return leftValDouble < rightValDouble;
                 }
+            } else if (leftType.equals("java.lang.Boolean")) {
+                Boolean leftValBool = (Boolean) leftVal;
+                Boolean rightValBool = (Boolean) rightVal;
+                switch (infixExpression.getOperatorTokenType()) {
+                    case EQEQUAL:
+                        return leftValBool.booleanValue() == rightValBool.booleanValue();
+                    case NOTEQUAL:
+                        return leftValBool.booleanValue() != rightValBool.booleanValue();
+                }
             }
 
             throw new EvalException(String.format("can not apply infix '%s' to %s and %s",
@@ -199,6 +222,34 @@ public class Evaluator {
             throw new EvalException(String.format("can not apply infix '%s' to %s and %s",
                     infixExpression.getOperatorTokenType().name(), typeMap.get(leftType), typeMap.get(rightType)));
         }
+    }
+
+    private Object evalIndex(IndexExpression indexExpression, Environment env) {
+        Object leftVal = eval(indexExpression.getLeftExp(), env);
+        String leftType = leftVal.getClass().getName();
+        Object indexVal = eval(indexExpression.getIndex(), env);
+
+        try {
+            if (leftType.equals("java.util.ArrayList")) {
+                List<Object> leftArray = (ArrayList<Object>) leftVal;
+                if (!indexVal.getClass().getName().equals("java.lang.Integer")) {
+                    throw new EvalException("Array index must be Int, got " + indexVal.getClass().getName());
+                }
+                Integer indexInt = (Integer) indexVal;
+                return leftArray.get(indexInt);
+            } else if (leftType.equals("java.util.HashMap")) {
+                Map<String, Object> leftMap = (HashMap<String, Object>) leftVal;
+                if (!indexVal.getClass().getName().equals("java.lang.String")) {
+                    throw new EvalException("Array index must be Int, got " + indexVal.getClass().getName());
+                }
+                String indexStr = (String) indexVal;
+                return leftMap.get(indexStr);
+            }
+        } catch (java.lang.IndexOutOfBoundsException except) {
+            throw new EvalException("Index out of range");
+        }
+
+        throw new EvalException(String.format("can not apply index operate to type '%s'", leftType));
     }
 
     private Object evalLet(LetStatement letStatement, Environment env) {
@@ -230,5 +281,9 @@ public class Evaluator {
         }
 
         return retDict;
+    }
+
+    private void evalIf(IfExpression ifExpression, Environment env) {
+
     }
 }

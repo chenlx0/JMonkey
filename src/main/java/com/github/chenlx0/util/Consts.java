@@ -48,4 +48,6 @@ public class Consts {
     // Infix or Prefix Operator
     public static final short INFIX_OP = 0, PREFIX_OP = 1;
 
+    // version
+    public static final String VERSION = "0.0.1";
 }

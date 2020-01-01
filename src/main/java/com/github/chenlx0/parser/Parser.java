@@ -50,6 +50,12 @@ public class Parser {
         return program;
     }
 
+    public Program parseProgram(String text) {
+        this.lexer.setText(text);
+        nextToken(); nextToken();
+        return parseProgram();
+    }
+
     private Statement parseStatement() {
         if (curToken.isToken(TokenType.SEMI)) {
             nextToken();
