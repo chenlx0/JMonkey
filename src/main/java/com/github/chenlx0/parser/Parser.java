@@ -144,6 +144,7 @@ public class Parser {
         while (!peekToken.isToken(TokenType.SEMI) && precedence < infixPrecedence(peekToken.getType())) {
             nextToken();
             Expression nextExp = parseInfix(leftExp);
+
             if (nextExp == null) {
                 return leftExp;
             }
@@ -336,9 +337,9 @@ public class Parser {
     }
 
     private Expression parseCall(Expression leftExp) {
-
         List<Expression> parameters = new LinkedList<>();
         nextToken();
+
         while (!curToken.isToken(TokenType.RPAR)) {
             Expression arg = parseExpression();
             parameters.add(arg);
@@ -349,7 +350,6 @@ public class Parser {
             expect(TokenType.COMMA);
             nextToken(); nextToken();
         }
-        nextToken();
 
         return new CallExpression(leftExp, parameters);
     }
