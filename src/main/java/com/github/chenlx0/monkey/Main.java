@@ -22,7 +22,7 @@ public class Main {
         String code = null;
         Object object = null;
         System.out.printf("JMonkey %s\n", Consts.VERSION);
-        do {
+        while (true) {
             try {
                 System.out.print(">>");
                 code = scanner.nextLine();
@@ -33,7 +33,7 @@ public class Main {
             } catch (MonkeyException mke) {
                 System.out.println(mke.toString());
             }
-        } while (true);
+        }
 
     }
 }

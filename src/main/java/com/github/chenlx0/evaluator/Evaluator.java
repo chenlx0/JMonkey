@@ -5,6 +5,7 @@ import com.github.chenlx0.ast.Node;
 import com.github.chenlx0.ast.NodeType;
 import com.github.chenlx0.ast.Statement;
 import com.github.chenlx0.ast.impl.*;
+import com.github.chenlx0.util.Consts;
 import com.github.chenlx0.util.EvalException;
 
 import java.util.ArrayList;
@@ -24,12 +25,12 @@ public class Evaluator {
     static
     {
         typeMap = new HashMap<>();
-        typeMap.put("java.util.ArrayList", "Array");
-        typeMap.put("java.util.HashMap", "Dict");
-        typeMap.put("java.lang.Integer", "Int");
-        typeMap.put("java.lang.Double", "Float");
-        typeMap.put("java.lang.String", "String");
-        typeMap.put("java.lang.Boolean", "Bool");
+        typeMap.put(Consts.ARRAY, "Array");
+        typeMap.put(Consts.DICT, "Dict");
+        typeMap.put(Consts.INTEGER, "Int");
+        typeMap.put(Consts.FLOAT, "Float");
+        typeMap.put(Consts.STRING, "String");
+        typeMap.put(Consts.BOOL, "Bool");
     }
 
     public Evaluator() {
@@ -105,7 +106,7 @@ public class Evaluator {
 
     private Object evalVariable(VariableExpression varExp, Environment env) {
         String varName = varExp.getLiteral();
-        return env.getStore().get(varName);
+        return env.getEnvVar(varName);
     }
 
     private Object evalPrefix(PrefixExpression prefixExpression, Environment env) {
@@ -114,9 +115,9 @@ public class Evaluator {
 
         switch (prefixExpression.getOperatorTokenType()) {
             case MINUS: {
-                if (valType.equals("java.lang.Double")) {
+                if (valType.equals(Consts.FLOAT)) {
                     return -1 * (Double) val;
-                } else if (valType.equals("java.lang.Integer")) {
+                } else if (valType.equals(Consts.INTEGER)) {
                     return -1 * (Integer) val;
                 } else {
                     throw new EvalException("can not apply prefix '-' to " + typeMap.get(valType));
@@ -124,7 +125,7 @@ public class Evaluator {
             }
 
             case EXCL: {
-                if (valType.equals("java.lang.Boolean")) {
+                if (valType.equals(Consts.BOOL)) {
                     return !((Boolean) val);
                 } else {
                     throw new EvalException("can not apply prefix '!' to " + typeMap.get(valType));
@@ -154,16 +155,16 @@ public class Evaluator {
 
         // if type a number type is double and another type is int
         // convert int to double
-        if (leftType.equals("java.lang.Integer") && rightType.equals("java.lang.Double")) {
-            leftType = "java.lang.Double";
+        if (leftType.equals(Consts.INTEGER) && rightType.equals(Consts.FLOAT)) {
+            leftType = Consts.FLOAT;
             leftVal = Double.valueOf((Integer) leftVal);
-        } else if (leftType.equals("java.lang.Double") && rightType.equals("java.lang.Integer")) {
-            rightType = "java.lang.Double";
+        } else if (leftType.equals(Consts.FLOAT) && rightType.equals(Consts.INTEGER)) {
+            rightType = Consts.FLOAT;
             rightVal = Double.valueOf((Integer) rightVal);
         }
 
         if (leftType.equals(rightType)) {
-            if (leftType.equals("java.lang.Integer")) {
+            if (leftType.equals(Consts.INTEGER)) {
                 Integer leftValInt = (Integer) leftVal;
                 Integer rightValInt = (Integer) rightVal;
                 switch (infixExpression.getOperatorTokenType()) {
@@ -188,7 +189,7 @@ public class Evaluator {
                     case LESS:
                         return leftValInt < rightValInt;
                 }
-            } else if (leftType.equals("java.lang.Double")) {
+            } else if (leftType.equals(Consts.FLOAT)) {
                 Double leftValDouble = (Double) leftVal;
                 Double rightValDouble = (Double) rightVal;
                 switch (infixExpression.getOperatorTokenType()) {
@@ -213,7 +214,7 @@ public class Evaluator {
                     case LESS:
                         return leftValDouble < rightValDouble;
                 }
-            } else if (leftType.equals("java.lang.Boolean")) {
+            } else if (leftType.equals(Consts.BOOL)) {
                 Boolean leftValBool = (Boolean) leftVal;
                 Boolean rightValBool = (Boolean) rightVal;
                 switch (infixExpression.getOperatorTokenType()) {
@@ -238,17 +239,17 @@ public class Evaluator {
         Object indexVal = eval(indexExpression.getIndex(), env);
 
         try {
-            if (leftType.equals("java.util.ArrayList")) {
+            if (leftType.equals(Consts.ARRAY)) {
                 List<Object> leftArray = (ArrayList<Object>) leftVal;
-                if (!indexVal.getClass().getName().equals("java.lang.Integer")) {
-                    throw new EvalException("Array index must be Int, got " + indexVal.getClass().getName());
+                if (!indexVal.getClass().getName().equals(Consts.INTEGER)) {
+                    throw new EvalException("Array index must be Int, got " + typeMap.get(indexVal.getClass().getName()));
                 }
                 Integer indexInt = (Integer) indexVal;
                 return leftArray.get(indexInt);
-            } else if (leftType.equals("java.util.HashMap")) {
+            } else if (leftType.equals(Consts.DICT)) {
                 Map<String, Object> leftMap = (HashMap<String, Object>) leftVal;
-                if (!indexVal.getClass().getName().equals("java.lang.String")) {
-                    throw new EvalException("Array index must be Int, got " + indexVal.getClass().getName());
+                if (!indexVal.getClass().getName().equals(Consts.STRING)) {
+                    throw new EvalException("Array index must be Int, got " + typeMap.get(indexVal.getClass().getName()));
                 }
                 String indexStr = (String) indexVal;
                 return leftMap.get(indexStr);
@@ -263,7 +264,7 @@ public class Evaluator {
     private Object evalLet(LetStatement letStatement, Environment env) {
         Object val = eval(letStatement.getExpression(), env);
         String varName = letStatement.getVariable().getLiteral();
-        env.getStore().put(varName, val);
+        env.setEnvVar(varName, val);
         return null;
     }
 

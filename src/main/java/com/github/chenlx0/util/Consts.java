@@ -45,6 +45,15 @@ public class Consts {
         InfixPrecedence.put(Token.TokenType.LPAR, CALL);
     }
 
+    // type name
+    public static String INTEGER = "java.lang.Integer",
+            FLOAT = "java.lang.Double",
+            BOOL = "java.lang.Boolean",
+            DICT = "java.util.HashMap",
+            STRING = "java.lang.String",
+            ARRAY = "java.util.ArrayList",
+            FUNC = "com.github.chenlx0.evaluator.Function";
+
     // Infix or Prefix Operator
     public static final short INFIX_OP = 0, PREFIX_OP = 1;
 

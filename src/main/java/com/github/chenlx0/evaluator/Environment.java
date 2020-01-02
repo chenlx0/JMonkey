@@ -25,11 +25,16 @@ public class Environment {
         this.outer = outer;
     }
 
-    public Map<String, Object> getStore() {
-        return store;
+    public Object getEnvVar(String varName) {
+        Object ret = store.get(varName);
+
+        if (ret != null) return ret;
+        else if (outer == null) return null;
+
+        return outer.getEnvVar(varName);
     }
 
-    public void setStore(Map<String, Object> store) {
-        this.store = store;
+    public void setEnvVar(String varName, Object var) {
+        store.put(varName, var);
     }
 }
