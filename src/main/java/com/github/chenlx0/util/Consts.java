@@ -52,7 +52,8 @@ public class Consts {
             DICT = "java.util.HashMap",
             STRING = "java.lang.String",
             ARRAY = "java.util.ArrayList",
-            FUNC = "com.github.chenlx0.evaluator.Function";
+            FUNC = "com.github.chenlx0.evaluator.Function",
+            RET = "com.github.chenlx0.evaluator.RetObject";
 
     // Infix or Prefix Operator
     public static final short INFIX_OP = 0, PREFIX_OP = 1;

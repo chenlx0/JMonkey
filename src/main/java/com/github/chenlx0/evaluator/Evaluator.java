@@ -51,6 +51,10 @@ public class Evaluator {
             } else {
                 ret = eval(st, env);
             }
+
+            if (ret != null && Consts.RET.equals(ret.getClass().getName())) {
+                return ret;
+            }
         }
 
         return ret;
@@ -82,6 +86,12 @@ public class Evaluator {
                 return evalInfix((InfixExpression) node, env);
             case INDEX:
                 return evalIndex((IndexExpression) node, env);
+            case FUNCTION:
+                return evalFunction((FunctionExpression) node, env);
+            case CALL:
+                return evalCall((CallExpression) node, env);
+            case RETURN:
+                return evalReturn((ReturnStatement) node, env);
         }
 
         throw new EvalException("can not eval node type: " + node.nodeType().name());
@@ -313,5 +323,49 @@ public class Evaluator {
         }
 
         return ret;
+    }
+
+    private Object evalFunction(FunctionExpression functionExpression, Environment env) {
+        return new Function(functionExpression.getParameters(),
+                functionExpression.getBlockStatements(), env);
+    }
+
+    private Object evalCall(CallExpression callExpression, Environment env) {
+        Object leftExp = eval(callExpression.getLeftExp(), env);
+
+        if (!Consts.FUNC.equals(leftExp.getClass().getName())) {
+            throw new EvalException("variable to be called must be function");
+        }
+
+        Function func = (Function) leftExp;
+        Environment newEnv = extendFunctionEnv(func, callExpression.getParameters(), env);
+        Object ret = eval(func.getBlockStatements(), newEnv);
+
+        // unwrap return object
+        if (ret != null && Consts.RET.equals(ret.getClass().getName())) {
+            return ((RetObject) ret).getObject();
+        }
+
+        return ret;
+    }
+
+    private Environment extendFunctionEnv(Function func, List<Expression> parameters, Environment env) {
+        Environment newEnv = new Environment();
+        newEnv.setOuter(func.getEnv());
+
+        int parametersSize = parameters.size();
+        if (func.getVarNames().size() != parametersSize) {
+            throw new EvalException("parameters do not match function");
+        }
+
+        for (int i = 0; i < parametersSize; i++) {
+            newEnv.setEnvVar(func.getVarNames().get(i), eval(parameters.get(i), env));
+        }
+
+        return newEnv;
+    }
+
+    private Object evalReturn(ReturnStatement returnStatement, Environment env) {
+        return new RetObject(eval(returnStatement.getExpression(), env));
     }
 }
