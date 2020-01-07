@@ -333,6 +333,10 @@ public class Evaluator {
     private Object evalCall(CallExpression callExpression, Environment env) {
         Object leftExp = eval(callExpression.getLeftExp(), env);
 
+        if (leftExp == null) {
+            throw new EvalException("dose not exist function");
+        }
+
         if (!Consts.FUNC.equals(leftExp.getClass().getName())) {
             throw new EvalException("variable to be called must be function");
         }

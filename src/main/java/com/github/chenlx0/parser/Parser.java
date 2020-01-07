@@ -355,21 +355,12 @@ public class Parser {
     }
 
     private Expression parseIndex(Expression leftExp) {
-        Expression index;
-
-        // index must be number or string
-        if (peekToken.isToken(TokenType.NUMBER)) {
-            nextToken();
-            index = parseNumberLiteral();
-        } else if (peekToken.isToken(TokenType.STRING)) {
-            nextToken();
-            index = parseStringLiteral();
-        } else {
-            throw new ParseException("index must be number or string");
-        }
-
-        expect(TokenType.RSQB);
         nextToken();
+
+        Expression index = parseExpression();
+        expect(TokenType.RSQB);
+
+        nextToken(); nextToken();
 
         return new IndexExpression(leftExp, index);
     }

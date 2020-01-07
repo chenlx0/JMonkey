@@ -19,9 +19,9 @@ public class Main {
         Parser parser = new Parser(lexer);
         Evaluator evaluator = new Evaluator();
         Scanner scanner = new Scanner(System.in);
-        String code = null;
-        Object object = null;
-        System.out.printf("JMonkey %s\n", Consts.VERSION);
+        String code;
+        Object object;
+        System.out.printf("JMonkey Version %s\n", Consts.VERSION);
         while (true) {
             try {
                 System.out.print(">>");
@@ -29,7 +29,9 @@ public class Main {
                 if (code.startsWith("exit()")) break;
                 Program program = parser.parseProgram(code);
                 object = evaluator.evalProgram(program);
-                System.out.println(object);
+                if (object != null) {
+                    System.out.println(object);
+                }
             } catch (MonkeyException mke) {
                 System.out.println(mke.toString());
             }
