@@ -14,6 +14,6 @@ public class EvalException extends MonkeyException {
 
     @Override
     public String toString() {
-        return "[EVAL PROGRAM FAILED]" + msg;
+        return "[EVAL PROGRAM FAILED] " + msg;
     }
 }

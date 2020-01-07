@@ -5,13 +5,13 @@ import com.github.chenlx0.ast.Node;
 import com.github.chenlx0.ast.NodeType;
 import com.github.chenlx0.ast.Statement;
 import com.github.chenlx0.ast.impl.*;
+import com.github.chenlx0.builtin.BuiltinFunc;
+import com.github.chenlx0.builtin.BuiltinFuncFactory;
+import com.github.chenlx0.lexer.Token;
 import com.github.chenlx0.util.Consts;
 import com.github.chenlx0.util.EvalException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author: Chen Lixiang
@@ -22,15 +22,15 @@ public class Evaluator {
     private Environment globalEnv;
 
     private static Map<String, String> typeMap;
-    static
-    {
+
+    static {
         typeMap = new HashMap<>();
-        typeMap.put(Consts.ARRAY, "Array");
-        typeMap.put(Consts.DICT, "Dict");
-        typeMap.put(Consts.INTEGER, "Int");
-        typeMap.put(Consts.FLOAT, "Float");
-        typeMap.put(Consts.STRING, "String");
-        typeMap.put(Consts.BOOL, "Bool");
+        typeMap.put(Consts.ARRAY, "array");
+        typeMap.put(Consts.DICT, "dict");
+        typeMap.put(Consts.INTEGER, "int");
+        typeMap.put(Consts.FLOAT, "float");
+        typeMap.put(Consts.STRING, "string");
+        typeMap.put(Consts.BOOL, "bool");
     }
 
     public Evaluator() {
@@ -66,7 +66,9 @@ public class Evaluator {
                 BlockStatements blockStatements = (BlockStatements) node;
                 List<Statement> nodes = blockStatements.getStatements();
                 return evalStatements(nodes, env);
-            case NUMBER: case STRING: case BOOLEAN:
+            case NUMBER:
+            case STRING:
+            case BOOLEAN:
                 return evalSingle((Expression) node);
             case IF:
                 return evalIf((IfExpression) node, env);
@@ -116,7 +118,11 @@ public class Evaluator {
 
     private Object evalVariable(VariableExpression varExp, Environment env) {
         String varName = varExp.getLiteral();
-        return env.getEnvVar(varName);
+        Object res = env.getEnvVar(varName);
+        if (res == null) {
+            res = BuiltinFuncFactory.getBuiltinFunc(varName);
+        }
+        return res;
     }
 
     private Object evalPrefix(PrefixExpression prefixExpression, Environment env) {
@@ -148,9 +154,19 @@ public class Evaluator {
 
     private Object evalInfix(InfixExpression infixExpression, Environment env) {
         switch (infixExpression.getOperatorTokenType()) {
-            case PLUS: case MULTI: case MINUS: case DIV:
-            case EQEQUAL: case NOTEQUAL: case LESS: case GREATER:
-            case LESSEQ: case GREATEQ:
+            case PLUS:
+            case MULTI:
+            case MINUS:
+            case DIV:
+            case EQEQUAL:
+            case NOTEQUAL:
+            case LESS:
+            case GREATER:
+            case LESSEQ:
+            case GREATEQ:
+            case AMPER:
+            case XOR:
+            case VBAR:
                 return evalInfixPuzzle(infixExpression, env);
         }
 
@@ -175,55 +191,9 @@ public class Evaluator {
 
         if (leftType.equals(rightType)) {
             if (leftType.equals(Consts.INTEGER)) {
-                Integer leftValInt = (Integer) leftVal;
-                Integer rightValInt = (Integer) rightVal;
-                switch (infixExpression.getOperatorTokenType()) {
-                    case PLUS:
-                        return leftValInt + rightValInt;
-                    case MULTI:
-                        return leftValInt * rightValInt;
-                    case MINUS:
-                        return leftValInt - rightValInt;
-                    case DIV:
-                        return leftValInt / rightValInt;
-                    case EQEQUAL:
-                        return leftValInt.intValue() == rightValInt.intValue();
-                    case NOTEQUAL:
-                        return leftValInt.intValue() != rightValInt.intValue();
-                    case GREATEQ:
-                        return leftValInt >= rightValInt;
-                    case GREATER:
-                        return leftValInt > rightValInt;
-                    case LESSEQ:
-                        return leftValInt <= rightValInt;
-                    case LESS:
-                        return leftValInt < rightValInt;
-                }
+                return calculateInteger((Integer) leftVal, (Integer) rightVal, infixExpression.getOperatorTokenType());
             } else if (leftType.equals(Consts.FLOAT)) {
-                Double leftValDouble = (Double) leftVal;
-                Double rightValDouble = (Double) rightVal;
-                switch (infixExpression.getOperatorTokenType()) {
-                    case PLUS:
-                        return leftValDouble + rightValDouble;
-                    case MULTI:
-                        return leftValDouble * rightValDouble;
-                    case MINUS:
-                        return leftValDouble - rightValDouble;
-                    case DIV:
-                        return leftValDouble / rightValDouble;
-                    case EQEQUAL:
-                        return leftValDouble.doubleValue() == rightValDouble.doubleValue();
-                    case NOTEQUAL:
-                        return leftValDouble.doubleValue() != rightValDouble.doubleValue();
-                    case GREATEQ:
-                        return leftValDouble >= rightValDouble;
-                    case GREATER:
-                        return leftValDouble > rightValDouble;
-                    case LESSEQ:
-                        return leftValDouble <= rightValDouble;
-                    case LESS:
-                        return leftValDouble < rightValDouble;
-                }
+                return calculateDouble((Double) leftVal, (Double) rightVal, infixExpression.getOperatorTokenType());
             } else if (leftType.equals(Consts.BOOL)) {
                 Boolean leftValBool = (Boolean) leftVal;
                 Boolean rightValBool = (Boolean) rightVal;
@@ -241,6 +211,66 @@ public class Evaluator {
             throw new EvalException(String.format("can not apply infix '%s' to %s and %s",
                     infixExpression.getOperatorTokenType().name(), typeMap.get(leftType), typeMap.get(rightType)));
         }
+    }
+
+    private Object calculateInteger(Integer leftValInt, Integer rightValInt, Token.TokenType opToken) {
+        switch (opToken) {
+            case PLUS:
+                return leftValInt + rightValInt;
+            case MULTI:
+                return leftValInt * rightValInt;
+            case MINUS:
+                return leftValInt - rightValInt;
+            case DIV:
+                return leftValInt / rightValInt;
+            case EQEQUAL:
+                return leftValInt.intValue() == rightValInt.intValue();
+            case NOTEQUAL:
+                return leftValInt.intValue() != rightValInt.intValue();
+            case GREATEQ:
+                return leftValInt >= rightValInt;
+            case GREATER:
+                return leftValInt > rightValInt;
+            case LESSEQ:
+                return leftValInt <= rightValInt;
+            case LESS:
+                return leftValInt < rightValInt;
+            case AMPER:
+                return leftValInt & rightValInt;
+            case VBAR:
+                return leftValInt | rightValInt;
+            case XOR:
+                return leftValInt ^ rightValInt;
+        }
+
+        throw new EvalException(String.format("can not apply infix '%s' to int", opToken));
+    }
+
+    private Object calculateDouble(Double leftValDouble, Double rightValDouble, Token.TokenType opToken) {
+        switch (opToken) {
+            case PLUS:
+                return leftValDouble + rightValDouble;
+            case MULTI:
+                return leftValDouble * rightValDouble;
+            case MINUS:
+                return leftValDouble - rightValDouble;
+            case DIV:
+                return leftValDouble / rightValDouble;
+            case EQEQUAL:
+                return leftValDouble.doubleValue() == rightValDouble.doubleValue();
+            case NOTEQUAL:
+                return leftValDouble.doubleValue() != rightValDouble.doubleValue();
+            case GREATEQ:
+                return leftValDouble >= rightValDouble;
+            case GREATER:
+                return leftValDouble > rightValDouble;
+            case LESSEQ:
+                return leftValDouble <= rightValDouble;
+            case LESS:
+                return leftValDouble < rightValDouble;
+        }
+
+        throw new EvalException(String.format("can not apply infix '%s' to float", opToken));
     }
 
     private Object evalIndex(IndexExpression indexExpression, Environment env) {
@@ -335,6 +365,15 @@ public class Evaluator {
 
         if (leftExp == null) {
             throw new EvalException("dose not exist function");
+        }
+
+        if (leftExp instanceof BuiltinFunc) {
+            BuiltinFunc func = (BuiltinFunc) leftExp;
+            List<Object> params = new LinkedList<>();
+            for (Expression e : callExpression.getParameters()) {
+                params.add(eval(e, env));
+            }
+            return func.eval(params);
         }
 
         if (!Consts.FUNC.equals(leftExp.getClass().getName())) {
