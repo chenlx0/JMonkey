@@ -13,7 +13,10 @@ import java.util.Map;
 public class LenFunc implements BuiltinFunc {
     @Override
     public Object eval(List<Object> params) {
-        assert params.size() == 1;
+        if (params.size() != 1) {
+            throw new EvalException("len only accept 1 parameter");
+        }
+
         Object obj = params.get(0);
 
         if (obj instanceof List) {

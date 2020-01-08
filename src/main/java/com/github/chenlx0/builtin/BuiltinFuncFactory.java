@@ -1,6 +1,8 @@
 package com.github.chenlx0.builtin;
 
+import com.github.chenlx0.builtin.impl.AddFunc;
 import com.github.chenlx0.builtin.impl.LenFunc;
+import com.github.chenlx0.builtin.impl.SetFunc;
 
 /**
  * @author: Chen Lixiang
@@ -11,6 +13,10 @@ public class BuiltinFuncFactory {
         switch (name) {
             case "len":
                 return new LenFunc();
+            case "set":
+                return new SetFunc();
+            case "add":
+                return new AddFunc();
         }
 
         return null;
